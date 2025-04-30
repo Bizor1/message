@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f7f7f7;
+  --foreground: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #f7f7f7;
+    --foreground: #000000;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* Force header to use solid style on auth pages */
+body.auth-page header {
+  @apply bg-white;
+}
+
+body.auth-page .nav-link-transparent {
+  @apply text-black;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  /* The truly-transparent rule is removed */
+}
+
+@layer components {
+  .container-represent {
+    @apply w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .nav-link {
+    @apply text-black text-xs hover:opacity-70 transition-opacity duration-200;
+  }
+  
+  .nav-link-transparent {
+    @apply text-white text-xs hover:opacity-70 transition-opacity duration-200;
+  }
+
+  .btn-represent {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-xs font-medium uppercase tracking-wider bg-black text-white hover:bg-gray-900 transition-colors duration-200;
+  }
+  
+  .header-transparent {
+    @apply sticky top-0 left-0 right-0 z-50 truly-transparent;
+  }
+  
+  .btn-underline {
+    @apply relative text-white uppercase tracking-widest text-xs font-medium inline-flex items-center;
+  }
+  
+  .btn-underline::after {
+    content: '';
+    @apply absolute left-0 bottom-0 w-full h-[1px] bg-white transform origin-right scale-x-100;
+    transition: transform 0.5s ease-out;
+  }
+  
+  .btn-underline:hover::after {
+    @apply origin-left scale-x-100;
+    animation: underlineMove 1.5s ease-in-out infinite;
+  }
+  
+  .btn-underline.text-black::after {
+    @apply bg-black;
+  }
+  
+  @keyframes underlineMove {
+    0% {
+      transform: scaleX(1);
+      transform-origin: right;
+    }
+    45% {
+      transform: scaleX(0);
+      transform-origin: right;
+    }
+    55% {
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+    100% {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+  }
+}
