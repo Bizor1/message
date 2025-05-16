@@ -6,18 +6,23 @@ import { useEffect, useState, useRef } from "react";
 import { usePathname } from 'next/navigation';
 import Sidebar from "./Sidebar";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { useSidebar } from "@/context/SidebarContext";
 import MobileMenu from "./MobileMenu";
+import SearchButton from './SearchButton';
 
 export default function Header() {
     const [scrolled, setScrolled] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const sidebarTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const pathname = usePathname();
     const { openCart, itemCount } = useCart();
+    const { isAuthenticated } = useAuth();
+    const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
 
     const isCollectionPage = pathname.startsWith('/collections/');
+    const isProductPage = pathname.startsWith('/products/');
 
     useEffect(() => {
         const handleScroll = () => {
@@ -54,14 +59,14 @@ export default function Header() {
         }, 200);
     };
 
-    const useSolidStyle = isCollectionPage || isSidebarOpen;
+    const useSolidStyle = isCollectionPage || isProductPage || isSidebarOpen;
     const linkClassName = useSolidStyle ? "nav-link" : "nav-link-transparent";
     const headerBgClass = useSolidStyle ? "bg-white" : "bg-transparent";
     const logoTextColor = useSolidStyle ? "text-black" : "text-white";
 
     const imageSrc = hoveredCategory === 'men'
-        ? '/images/Regular Fit Soft Twill Smart Shirt & Pants Set _ boohooMAN USA.jpg'
-        : '/images/Corporate Girlie✨.jpg';
+        ? '/images/WhatsApp Image 2025-05-14 at 12.29.28 PM.jpeg'
+        : '/images/1.jpeg';
     const blurOverlayLeft = "left-[40rem]";
 
     return (
@@ -96,18 +101,16 @@ export default function Header() {
                                 {/* Pass category to handlers - hover only active on md+ screens */}
                                 <div onMouseEnter={() => handleMouseEnter('men')} onMouseLeave={handleMouseLeave} className="hidden md:block">
                                     <Link href="/men" className={linkClassName}>
-                                        Man
+                                        Under His Shelter
                                     </Link>
                                 </div>
                                 <div onMouseEnter={() => handleMouseEnter('women')} onMouseLeave={handleMouseLeave} className="hidden md:block">
                                     <Link href="/women" className={linkClassName}>
-                                        Woman
+                                        Grey washed
                                     </Link>
                                 </div>
                                 {/* 247 link remains visible */}
-                                <Link href="/247" className={linkClassName}>
-                                    247
-                                </Link>
+
                             </nav>
 
                             {/* Mobile nav toggle - Opens Mobile Menu */}
@@ -137,8 +140,9 @@ export default function Header() {
                                                 ? "opacity-0 -translate-x-full absolute"
                                                 : "opacity-100 translate-x-0 relative"
                                                 }`}
+                                            style={{ marginRight: '-2px' }}
                                         >
-                                            MY&nbsp;
+                                            MY
                                         </span>
 
                                         {/* M (stays visible) */}
@@ -155,6 +159,7 @@ export default function Header() {
                                                 ? "opacity-0 translate-x-full absolute"
                                                 : "opacity-100 translate-x-0 relative"
                                                 }`}
+                                            style={{ marginLeft: '-2px' }}
                                         >
                                             ESSAGE
                                         </span>
@@ -166,22 +171,20 @@ export default function Header() {
                             <div className="flex items-center space-x-4">
                                 {/* Desktop Right navigation - Hidden below md */}
                                 <nav className="hidden md:flex items-center space-x-4">
-                                    <Link href="/retail" className={linkClassName}>
-                                        Retail
+
+
+
+                                    <Link href="/about" className={linkClassName}>
+                                        About
                                     </Link>
-                                    <Link href="/vault" className={linkClassName}>
-                                        The Vault
+                                    <Link href="/story" className={linkClassName}>
+                                        Story
                                     </Link>
-                                    <Link href="/prestige" className={linkClassName}>
-                                        Prestige
+                                    <Link href="/contact" className={linkClassName}>
+                                        Contact
                                     </Link>
                                     {/* Search Icon - Desktop only */}
-                                    <Link href="/search" className={linkClassName}>
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" />
-                                        </svg>
-                                        <span className="sr-only">Search</span>
-                                    </Link>
+                                    <SearchButton color={useSolidStyle ? 'black' : 'white'} />
                                 </nav>
 
                                 {/* Cart Button - Visible on all sizes */}
@@ -202,6 +205,21 @@ export default function Header() {
                                         </span>
                                     )}
                                 </button>
+
+                                {/* Profile Icon - Visible on all sizes */}
+                                <Link href="/auth" className={`${linkClassName} relative`}>
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="currentColor" strokeWidth="2" />
+                                        <path d="M20 21C20 18.2386 16.4183 16 12 16C7.58172 16 4 18.2386 4 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                    </svg>
+                                    <span className="sr-only">{isAuthenticated ? "Account" : "Sign in"}</span>
+                                </Link>
                             </div>
                         </div>
                     </div>

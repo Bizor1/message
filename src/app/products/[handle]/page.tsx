@@ -1,173 +1,225 @@
-import Image from 'next/image';
-import Link from 'next/link';
+import { Metadata } from "next";
+import { notFound } from 'next/navigation';
+import { shopifyFetch } from '@/lib/shopify';
+import ProductDetailsClient from '@/components/ProductDetailsClient';
 
-type ProductParams = {
+// Query to get product details including all images
+const getProductQuery = `
+  query getProduct($handle: String!) {
+    product(handle: $handle) {
+      id
+      title
+      description
+      handle
+      priceRange {
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+      media(first: 20) {
+        edges {
+          node {
+            ... on MediaImage {
+              mediaContentType
+              image {
+                url
+                altText
+              }
+            }
+            ... on Video {
+              mediaContentType
+              sources {
+                url
+                mimeType
+                format
+              }
+              previewImage {
+                url
+              }
+            }
+          }
+        }
+      }
+      variants(first: 20) {
+        edges {
+          node {
+            id
+            title
+            availableForSale
+            selectedOptions {
+              name
+              value
+            }
+          }
+        }
+      }
+      options {
+        name
+        values
+      }
+    }
+  }
+`;
+
+interface ShopifyProduct {
+    id: string;
+    title: string;
+    description: string;
+    handle: string;
+    priceRange: {
+        minVariantPrice: {
+            amount: string;
+            currencyCode: string;
+        };
+    };
+    media: {
+        edges: Array<{
+            node: {
+                mediaContentType: string;
+                image?: {
+                    url: string;
+                    altText: string | null;
+                };
+                sources?: Array<{
+                    url: string;
+                    mimeType: string;
+                    format: string;
+                }>;
+                previewImage?: {
+                    url: string;
+                };
+            };
+        }>;
+    };
+    variants: {
+        edges: Array<{
+            node: {
+                id: string;
+                title: string;
+                availableForSale: boolean;
+                selectedOptions: Array<{
+                    name: string;
+                    value: string;
+                }>;
+            };
+        }>;
+    };
+    options: Array<{
+        name: string;
+        values: string[];
+    }>;
+}
+
+interface PageProps {
     params: {
         handle: string;
     };
-};
+}
 
-// This would eventually be replaced with actual Shopify data fetching
-// For now we'll use placeholder data
-const getProductData = (handle: string) => {
-    return {
-        id: `product-${handle}`,
-        title: handle.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-        description: "Premium quality product made with the finest materials. This item features a modern design that's perfect for any occasion.",
-        price: "149.99",
-        currencyCode: "USD",
-        images: [
-            // Placeholder images - would be replaced with actual product images
-            "/images/placeholder.jpg",
-            "/images/placeholder.jpg",
-            "/images/placeholder.jpg",
-        ],
-        variants: [
-            { id: 'variant-1', title: 'Small', available: true },
-            { id: 'variant-2', title: 'Medium', available: true },
-            { id: 'variant-3', title: 'Large', available: false },
-            { id: 'variant-4', title: 'X-Large', available: true },
-        ]
-    };
-};
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    try {
+        const response = await shopifyFetch<{ product: ShopifyProduct }>(getProductQuery, {
+            handle: params.handle
+        });
 
-export default function ProductPage({ params }: ProductParams) {
+        if (!response.product) {
+            return {
+                title: 'Product Not Found',
+            };
+        }
+
+        return {
+            title: response.product.title,
+            description: response.product.description,
+            openGraph: {
+                images: response.product.media.edges.map(edge => ({
+                    url: edge.node.image?.url || edge.node.sources?.[0].url || '',
+                    alt: edge.node.image?.altText || response.product.title,
+                })),
+            },
+        };
+    } catch (error) {
+        console.error('Error generating metadata:', error);
+        return {
+            title: 'Product',
+        };
+    }
+}
+
+export default async function ProductPage({ params }: PageProps) {
     const { handle } = params;
-    const product = getProductData(handle);
 
-    return (
-        <div className="py-12">
-            <div className="container-represent">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-                    {/* Product Images */}
-                    <div>
-                        <div className="grid grid-cols-1 gap-4">
-                            {product.images.map((image, index) => (
-                                <div key={index} className="relative aspect-square bg-gray-100">
-                                    {/* Replace with actual Image component when you have real images */}
-                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        Product Image {index + 1}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+    try {
+        const response = await shopifyFetch<{ product: ShopifyProduct }>(getProductQuery, {
+            handle
+        });
 
-                    {/* Product Info */}
-                    <div className="sticky top-24 self-start">
-                        <h1 className="text-xl md:text-2xl font-bold mb-2">{product.title}</h1>
+        if (!response.product) {
+            notFound();
+        }
 
-                        <div className="mb-6">
-                            <p className="text-sm">
-                                {new Intl.NumberFormat("en-US", {
-                                    style: "currency",
-                                    currency: product.currencyCode,
-                                    minimumFractionDigits: 2,
-                                }).format(parseFloat(product.price))}
-                            </p>
-                        </div>
+        // Sort images to prioritize front/back/detail images
+        const sortedImages = response.product.media.edges.sort((a, b) => {
+            const urlA = a.node.image?.url?.toLowerCase() || '';
+            const urlB = b.node.image?.url?.toLowerCase() || '';
 
-                        <div className="mb-6">
-                            <p className="text-xs text-gray-600 mb-4">{product.description}</p>
-                        </div>
+            // Front images first
+            if (urlA.includes('front')) return -1;
+            if (urlB.includes('front')) return 1;
 
-                        {/* Size Selection */}
-                        <div className="mb-6">
-                            <p className="text-xs mb-2">Size</p>
-                            <div className="grid grid-cols-4 gap-2">
-                                {product.variants.map((variant) => (
-                                    <button
-                                        key={variant.id}
-                                        className={`border text-xs py-2 px-4 ${variant.available
-                                            ? 'border-black hover:bg-black hover:text-white'
-                                            : 'border-gray-200 text-gray-300 cursor-not-allowed'
-                                            }`}
-                                        disabled={!variant.available}
-                                    >
-                                        {variant.title}
-                                    </button>
-                                ))}
-                            </div>
-                            {product.variants.some(v => !v.available) && (
-                                <p className="text-xs text-gray-500 mt-2">Some sizes are currently unavailable</p>
-                            )}
-                        </div>
+            // Back images second
+            if (urlA.includes('back')) return -1;
+            if (urlB.includes('back')) return 1;
 
-                        {/* Add to Cart Button */}
-                        <button className="w-full bg-black text-white py-3 uppercase text-xs tracking-wider hover:bg-gray-900 transition-colors mb-4">
-                            Add to Cart
-                        </button>
+            // Detail images last
+            if (urlA.includes('detail')) return 1;
+            if (urlB.includes('detail')) return -1;
 
-                        {/* Size Guide */}
-                        <button className="text-xs underline mb-6 inline-block">Size Guide</button>
+            return 0;
+        });
 
-                        {/* Product Details Accordion */}
-                        <div className="border-t border-gray-200 pt-4 mb-4">
-                            <button className="flex justify-between items-center w-full py-2 text-left">
-                                <span className="text-xs uppercase font-medium">Details</span>
-                                <svg
-                                    width="12"
-                                    height="12"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" />
-                                </svg>
-                            </button>
-                            <div className="hidden">
-                                <p className="text-xs py-4">
-                                    Additional product details would go here.
-                                </p>
-                            </div>
-                        </div>
+        // Separate detail images
+        const detailImages = sortedImages.filter(img =>
+            img.node.image?.url?.toLowerCase().includes('detail') ||
+            img.node.sources?.some(source => source.url.toLowerCase().includes('detail'))
+        );
 
-                        {/* Shipping Accordion */}
-                        <div className="border-t border-gray-200 pt-4 mb-4">
-                            <button className="flex justify-between items-center w-full py-2 text-left">
-                                <span className="text-xs uppercase font-medium">Shipping & Returns</span>
-                                <svg
-                                    width="12"
-                                    height="12"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" />
-                                </svg>
-                            </button>
-                            <div className="hidden">
-                                <p className="text-xs py-4">
-                                    Shipping and returns policy would go here.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        const mainImages = sortedImages.filter(img =>
+            !img.node.image?.url?.toLowerCase().includes('detail') &&
+            !img.node.sources?.some(source => source.url.toLowerCase().includes('detail'))
+        );
 
-                {/* Related Products */}
-                <div className="mt-16 pt-12 border-t border-gray-200">
-                    <h2 className="text-lg font-bold mb-8 text-center uppercase">You Might Also Like</h2>
+        const transformedProduct = {
+            id: response.product.id,
+            title: response.product.title,
+            description: response.product.description,
+            price: parseFloat(response.product.priceRange.minVariantPrice.amount),
+            currencyCode: response.product.priceRange.minVariantPrice.currencyCode,
+            mainImages: mainImages.map(img => ({
+                url: img.node.image?.url || img.node.sources?.[0].url || '',
+                altText: img.node.image?.altText || response.product.title,
+                type: (img.node.mediaContentType === 'VIDEO' ? 'video' : 'image') as 'video' | 'image',
+                previewUrl: img.node.previewImage?.url
+            })),
+            detailImages: detailImages.map(img => ({
+                url: img.node.image?.url || img.node.sources?.[0].url || '',
+                altText: img.node.image?.altText || response.product.title,
+                type: (img.node.mediaContentType === 'VIDEO' ? 'video' : 'image') as 'video' | 'image',
+                previewUrl: img.node.previewImage?.url
+            })),
+            options: response.product.options,
+            variants: response.product.variants.edges.map(({ node }) => ({
+                id: node.id,
+                title: node.title,
+                availableForSale: node.availableForSale,
+                selectedOptions: node.selectedOptions
+            }))
+        };
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {Array(4).fill(null).map((_, index) => (
-                            <div key={index} className="group">
-                                <Link href={`/products/related-product-${index + 1}`}>
-                                    <div className="relative aspect-[3/4] bg-gray-100 overflow-hidden mb-4">
-                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                            Related Product {index + 1}
-                                        </div>
-                                    </div>
-                                    <div className="px-1">
-                                        <h3 className="text-xs font-normal line-clamp-1 mb-1">Related Product {index + 1}</h3>
-                                        <p className="text-xs font-normal">$149.99</p>
-                                    </div>
-                                </Link>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+        return <ProductDetailsClient product={transformedProduct} />;
+    } catch (error) {
+        console.error('Error fetching product:', error);
+        notFound();
+    }
 } 

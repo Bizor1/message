@@ -1,4 +1,4 @@
-import { shopifyFetch } from '../lib/shopify';
+import { shopifyFetch } from '@/lib/shopify';
 import dotenv from 'dotenv';
 
 // Load environment variables from .env file
@@ -105,6 +105,25 @@ const checkoutCreateMutation = `
   }
 `;
 
+// Customer creation mutation
+const customerCreateMutation = `
+  mutation customerCreate($input: CustomerCreateInput!) {
+    customerCreate(input: $input) {
+      customer {
+        id
+        email
+        firstName
+        lastName
+      }
+      customerUserErrors {
+        code
+        field
+        message
+      }
+    }
+  }
+`;
+
 // Add type definitions
 type CustomerAccessToken = {
   accessToken: string;
@@ -150,6 +169,22 @@ type CheckoutCreateResponse = {
       webUrl: string;
     } | null;
     checkoutUserErrors: Array<{
+      code: string;
+      field: string[];
+      message: string;
+    }>;
+  };
+};
+
+type CustomerCreateResponse = {
+  customerCreate: {
+    customer: {
+      id: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+    } | null;
+    customerUserErrors: Array<{
       code: string;
       field: string[];
       message: string;
@@ -287,6 +322,56 @@ async function testShopifyAuth() {
   }
 }
 
-// Run the test
-testShopifyConnection();
-testShopifyAuth(); 
+async function testCustomerCreation() {
+  console.log('\nTesting customer creation...');
+  
+  const testCustomer = {
+    email: `test${Date.now()}@example.com`, // Unique email
+    password: 'TestPass123!',
+    firstName: 'Test',
+    lastName: 'User'
+  };
+
+  try {
+    const response = await shopifyFetch<CustomerCreateResponse>(
+      customerCreateMutation,
+      {
+        input: testCustomer
+      }
+    );
+
+    if (response.customerCreate.customerUserErrors.length > 0) {
+      console.log('❌ Customer creation failed:');
+      console.log(JSON.stringify(response.customerCreate.customerUserErrors, null, 2));
+    } else {
+      console.log('✓ Customer created successfully:');
+      console.log(JSON.stringify(response.customerCreate.customer, null, 2));
+    }
+
+    return response;
+  } catch (error) {
+    console.error('❌ Error during customer creation:', error);
+    throw error;
+  }
+}
+
+// Main execution
+async function main() {
+  try {
+    // Test basic connection
+    await testShopifyConnection();
+    
+    // Test customer creation
+    await testCustomerCreation();
+    
+    // Test authentication (existing function)
+    await testShopifyAuth();
+    
+  } catch (error) {
+    console.error('❌ Tests failed:', error);
+    process.exit(1);
+  }
+}
+
+// Run the tests
+main(); 

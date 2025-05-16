@@ -1,8 +1,10 @@
 'use client';
 
 import { useCart, CartItem } from '@/context/CartContext';
+import { createShopifyCheckout } from '@/lib/shopify/checkout';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
 // Reusable component for quantity adjustments
 const QuantitySelector = ({ item, updateQuantity }: { item: CartItem, updateQuantity: (id: string, q: number) => void }) => {
@@ -36,21 +38,38 @@ export default function CartSidebar() {
         cartTotal
     } = useCart();
 
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
     const formattedTotal = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cartTotal);
+
+    const handleCheckout = async () => {
+        setIsProcessing(true);
+        setCheckoutError(null);
+
+        try {
+            const checkoutUrl = await createShopifyCheckout(cartItems);
+            window.location.href = checkoutUrl;
+        } catch (error) {
+            console.error('Checkout error:', error);
+            setCheckoutError('Failed to create checkout. Please try again.');
+            setIsProcessing(false);
+        }
+    };
 
     return (
         <>
             {/* Backdrop Overlay */}
             {isCartOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ease-in-out"
+                    className="fixed inset-0 bg-black/50 z-[98] transition-opacity duration-300 ease-in-out"
                     onClick={closeCart}
                     aria-hidden="true"
                 ></div>
             )}
 
             {/* Sidebar */}
-            <div className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-xl z-[99] transform transition-transform duration-300 ease-in-out ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="flex flex-col h-full">
                     {/* Header */}
                     <div className="flex justify-between items-center p-4 border-b border-gray-200">
@@ -119,15 +138,30 @@ export default function CartSidebar() {
                             <span>{formattedTotal}</span>
                         </div>
                         <p className="text-xs text-center text-gray-500 mb-3">Gift cards & promotional codes applied at checkout</p>
+                        {checkoutError && (
+                            <p className="text-red-500 text-xs text-center mb-3">{checkoutError}</p>
+                        )}
                         <button
                             className="w-full bg-black text-white py-3 text-sm font-medium uppercase tracking-wider flex items-center justify-center disabled:opacity-50"
-                            disabled={cartItems.length === 0}
-                        // onClick={() => { /* TODO: Redirect to Shopify Checkout URL */ }}
+                            disabled={cartItems.length === 0 || isProcessing}
+                            onClick={handleCheckout}
                         >
-                            Secure Checkout
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 ml-2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H4.5a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                            </svg>
+                            {isProcessing ? (
+                                <>
+                                    Processing...
+                                    <svg className="animate-spin h-4 w-4 ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </>
+                            ) : (
+                                <>
+                                    Secure Checkout
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 ml-2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H4.5a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                                    </svg>
+                                </>
+                            )}
                         </button>
                         {/* Payment Icons Placeholder */}
                         <div className="mt-4 text-center text-xs text-gray-400">

@@ -1,5 +1,7 @@
-import Image from "next/image";
+'use client';
+
 import Link from "next/link";
+import { CldImage } from 'next-cloudinary';
 
 export default function Home() {
   return (
@@ -8,11 +10,12 @@ export default function Home() {
       <section className="relative w-full h-screen">
         {/* Hero image */}
         <div className="absolute inset-0">
-          <Image
-            src="/images/danilo-capece-NoVnXXmDNi0-unsplash.jpg"
+          <CldImage
+            src="mymessage/images/WhatsApp Image 2025-05-14 at 12.29.28 PM (2)"
             alt="Giant sneaker in cityscape"
             fill
             className="object-cover"
+            sizes="100vw"
             priority
           />
           {/* Dark overlay for better text readability */}
@@ -22,9 +25,9 @@ export default function Home() {
         {/* Hero content overlay */}
         <div className="relative flex flex-col items-center justify-center h-full text-center text-white px-4">
           <div className="mb-4 text-xs uppercase tracking-widest">Coming Soon</div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 uppercase tracking-wide">PONY HTN & MULE</h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 uppercase tracking-wide">UNDER HIS SHELTER</h1>
           <div className="text-xl mb-8">
-            <span>02D</span> : <span>09H</span> : <span>12M</span> : <span>00S</span>
+            <span>02</span> / <span>06</span> / <span>2025</span> #<span> ANTICIPATE</span>
           </div>
           <Link
             href="/collections/new-arrivals"
@@ -38,11 +41,12 @@ export default function Home() {
       {/* Full-height fashion image section */}
       <section className="relative w-full h-screen overflow-hidden">
         <div className="absolute inset-0">
-          <Image
-            src="/images/oladimeji-odunsi-aNj8Hvbrss8-unsplash.jpg"
+          <CldImage
+            src="mymessage/images/WhatsApp Image 2025-05-14 at 12.29.26 PM (1)"
             alt="Fashion model with blinds"
             fill
             className="object-cover object-center"
+            sizes="100vw"
             quality={100}
           />
           {/* Subtle gradient overlay for text readability */}
@@ -60,7 +64,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SS25 Overdrive Collection - Video Section */}
+      {/* Under His Shelter Collection - Video Section */}
       <section className="relative w-full h-screen overflow-hidden">
         <div className="absolute inset-0">
           <video
@@ -70,7 +74,7 @@ export default function Home() {
             loop
             playsInline
           >
-            <source src="/videos/3206478-hd_1920_1080_25fps.mp4" type="video/mp4" />
+            <source src="https://res.cloudinary.com/duhfv8nqy/video/upload/v1/mymessage/videos/2025_05_08_13_07_IMG_6845" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           {/* Subtle gradient overlay for text readability */}
@@ -79,13 +83,27 @@ export default function Home() {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
           <div className="mb-3 text-xs uppercase tracking-widest">EXPLORE COLLECTIONS</div>
           <div className="space-y-3 md:space-y-4 mb-6">
-            <Link href="/collections/ss25-overdrive" className="block text-xl md:text-3xl font-medium uppercase">SS25 Overdrive</Link>
-            <Link href="/collections/247" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">247</Link>
-            <Link href="/collections/woman" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">Woman</Link>
-            <Link href="/collections/initial" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">Initial</Link>
+            <Link
+              href="/collections/under-his-shelter"
+              className="block text-xl md:text-3xl font-medium uppercase opacity-100"
+            >
+              Under His Shelter
+            </Link>
+            <Link
+              href="/collections/rhinestone"
+              className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Rhinestone
+            </Link>
+            <Link
+              href="/collections/grey-washed"
+              className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Grey Washed
+            </Link>
           </div>
           <Link
-            href="/collections/ss25-overdrive"
+            href="/collections/under-his-shelter"
             className="btn-underline"
           >
             <span className="mr-2">→</span> DISCOVER
@@ -103,7 +121,7 @@ export default function Home() {
             loop
             playsInline
           >
-            <source src="/videos/3753702-uhd_3840_2160_25fps.mp4" type="video/mp4" />
+            <source src="https://res.cloudinary.com/duhfv8nqy/video/upload/v1/mymessage/videos/2025_05_08_13_07_IMG_6846" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           {/* Subtle gradient overlay for text readability */}
@@ -112,13 +130,27 @@ export default function Home() {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
           <div className="mb-3 text-xs uppercase tracking-widest">EXPLORE COLLECTIONS</div>
           <div className="space-y-3 md:space-y-4 mb-6">
-            <Link href="/collections/ss25-overdrive" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">SS25 Overdrive</Link>
-            <Link href="/collections/247" className="block text-xl md:text-3xl font-medium uppercase">247</Link>
-            <Link href="/collections/woman" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">Woman</Link>
-            <Link href="/collections/initial" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">Initial</Link>
+            <Link
+              href="/collections/under-his-shelter"
+              className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Under His Shelter
+            </Link>
+            <Link
+              href="/collections/rhinestone"
+              className="block text-xl md:text-3xl font-medium uppercase opacity-100"
+            >
+              Rhinestone
+            </Link>
+            <Link
+              href="/collections/grey-washed"
+              className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Grey washed
+            </Link>
           </div>
           <Link
-            href="/collections/247"
+            href="/collections/rhinestone"
             className="btn-underline"
           >
             <span className="mr-2">→</span> DISCOVER
@@ -136,7 +168,7 @@ export default function Home() {
             loop
             playsInline
           >
-            <source src="/videos/3206478-hd_1920_1080_25fps.mp4" type="video/mp4" />
+            <source src="https://res.cloudinary.com/duhfv8nqy/video/upload/v1/mymessage/videos/2025_05_08_13_07_IMG_6847" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           {/* Subtle gradient overlay for text readability */}
@@ -145,13 +177,27 @@ export default function Home() {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
           <div className="mb-3 text-xs uppercase tracking-widest">EXPLORE COLLECTIONS</div>
           <div className="space-y-3 md:space-y-4 mb-6">
-            <Link href="/collections/ss25-overdrive" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">SS25 Overdrive</Link>
-            <Link href="/collections/247" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">247</Link>
-            <Link href="/collections/woman" className="block text-xl md:text-3xl font-medium uppercase">Woman</Link>
-            <Link href="/collections/initial" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">Initial</Link>
+            <Link
+              href="/collections/under-his-shelter"
+              className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Under His Shelter
+            </Link>
+            <Link
+              href="/collections/rhinestone"
+              className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Rhinestone
+            </Link>
+            <Link
+              href="/collections/grey-washed"
+              className="block text-xl md:text-3xl font-medium uppercase opacity-100"
+            >
+              Grey Washed
+            </Link>
           </div>
           <Link
-            href="/collections/woman"
+            href="/collections/rhinestone"
             className="btn-underline"
           >
             <span className="mr-2">→</span> DISCOVER
@@ -169,7 +215,7 @@ export default function Home() {
             loop
             playsInline
           >
-            <source src="/videos/3753702-uhd_3840_2160_25fps.mp4" type="video/mp4" />
+            <source src="https://res.cloudinary.com/duhfv8nqy/video/upload/v1/mymessage/videos/2025_05_08_13_07_IMG_6846" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           {/* Subtle gradient overlay for text readability */}
@@ -178,13 +224,27 @@ export default function Home() {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
           <div className="mb-3 text-xs uppercase tracking-widest">EXPLORE COLLECTIONS</div>
           <div className="space-y-3 md:space-y-4 mb-6">
-            <Link href="/collections/ss25-overdrive" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">SS25 Overdrive</Link>
-            <Link href="/collections/247" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">247</Link>
-            <Link href="/collections/woman" className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity">Woman</Link>
-            <Link href="/collections/initial" className="block text-xl md:text-3xl font-medium uppercase">Initial</Link>
+            <Link
+              href="/collections/under-his-shelter"
+              className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Under His Shelter
+            </Link>
+            <Link
+              href="/collections/rhinestone"
+              className="block text-lg md:text-2xl font-medium uppercase opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Rhinestone
+            </Link>
+            <Link
+              href="/collections/grey-washed"
+              className="block text-xl md:text-3xl font-medium uppercase opacity-100"
+            >
+              Grey washed
+            </Link>
           </div>
           <Link
-            href="/collections/initial"
+            href="/collections/grey-washed"
             className="btn-underline"
           >
             <span className="mr-2">→</span> DISCOVER

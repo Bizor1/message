@@ -31,7 +31,8 @@ export default function CollectionClientLayout({
 }: CollectionClientLayoutProps) {
     const [isFilterBarVisible, setIsFilterBarVisible] = useState(true);
     const filterBarRef = useRef<HTMLDivElement>(null);
-    const actualProductCount = productCount ?? products.length;
+
+    const actualProductCount = productCount || products.length;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -61,7 +62,6 @@ export default function CollectionClientLayout({
             </div>
 
             {/* Sticky Container for Filter Bar */}
-            {/* Adjusted top position for potential sticky header on mobile? Assuming header is h-16 (4rem) */}
             <div ref={filterBarRef} className={`sticky top-16 z-10 bg-[var(--background)] transition-opacity duration-300 ${isFilterBarVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 {/* View and Filter Controls Row - Stacks on small screens */}
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center pt-4 pb-4 mb-6 border-b border-represent-gray space-y-4 md:space-y-0">
@@ -91,7 +91,10 @@ export default function CollectionClientLayout({
                 {products && products.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
                         {products.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                            <ProductCard
+                                key={product.id}
+                                product={product}
+                            />
                         ))}
                     </div>
                 ) : (

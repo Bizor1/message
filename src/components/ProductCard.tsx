@@ -1,18 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
-import { useCart } from "@/context/CartContext"; // Import useCart
+import { useCart } from "@/context/CartContext";
+import { useSidebar } from "@/context/SidebarContext";
 
 // Define a simple type for dummy data
 interface DummyProduct {
-    id: string;
-    imageUrlFront: string; // Front image URL
-    imageUrlBack: string;  // Back image URL
+    id: string; // This should be the Shopify variant ID
+    imageUrlFront: string;
+    imageUrlBack: string;
     name: string;
     price: number;
     currencyCode?: string;
     color?: string;
     variantCount?: number;
-    href: string; // Link URL for the product details page
+    href: string;
+    variantId?: string; // Optional variant ID if different from main ID
 }
 
 interface ProductCardProps {
@@ -20,83 +22,91 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-    const { addToCart, openCart } = useCart(); // Get functions from context
+    const { addToCart, openCart } = useCart();
+    const { isSidebarOpen } = useSidebar();
 
-    const handleAddToCart = () => {
-        // In a real scenario, you'd need variant selection.
-        // For now, add the base product info.
+    const handleAddToCart = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Adding product to cart:', product);
         addToCart({
-            id: product.id, // Should be variant ID eventually
+            id: product.variantId || product.id, // Use variant ID if available
             name: product.name,
             price: product.price,
-            imageUrl: product.imageUrlFront, // Use front image for cart display
+            imageUrl: product.imageUrlFront,
             href: product.href,
-            // variantTitle: selectedVariant.title // e.g. "XL Black"
         });
-        openCart(); // Open the sidebar
+        console.log('Opening cart');
+        openCart();
     };
 
     const displayPrice = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: product.currencyCode || 'USD',
-        minimumFractionDigits: 0, // Display whole numbers for price
+        minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     }).format(product.price);
 
     return (
-        <div className="relative group">
+        <div className="group relative">
             {/* Product Image Container */}
-            <Link href={product.href} className="relative block bg-represent-gray aspect-square overflow-hidden">
-                {/* Front Image */}
-                <Image
-                    src={product.imageUrlFront}
-                    alt={product.name} // Alt text primarily for the front image
-                    width={500}
-                    height={500}
-                    className="absolute inset-0 object-cover w-full h-full transition-opacity duration-300 ease-in-out opacity-100 group-hover:opacity-0"
-                />
-                {/* Back Image */}
-                <Image
-                    src={product.imageUrlBack}
-                    alt="" // Alt text can be empty for decorative back image
-                    aria-hidden="true" // Hide from screen readers
-                    width={500}
-                    height={500}
-                    className="absolute inset-0 object-cover w-full h-full transition-opacity duration-300 ease-in-out opacity-0 group-hover:opacity-100"
-                />
-            </Link>
+            <div className="relative overflow-hidden" style={{ pointerEvents: 'none' }}>
+                <Link href={product.href} className="block aspect-square bg-represent-gray" style={{ pointerEvents: 'auto' }}>
+                    {/* Front Image */}
+                    <Image
+                        src={product.imageUrlFront}
+                        alt={product.name}
+                        width={500}
+                        height={500}
+                        className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ease-in-out group-hover:opacity-0"
+                    />
+                    {/* Back Image */}
+                    <Image
+                        src={product.imageUrlBack}
+                        alt=""
+                        aria-hidden="true"
+                        width={500}
+                        height={500}
+                        className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
+                    />
+                </Link>
 
-            {/* Product Info - Adjusted Layout */}
-            <div className="mt-2 flex justify-between items-start text-xs">
-                {/* Left side: Name and Color/Variants */}
+                {/* Add to Cart Button - Only show when sidebar is not open */}
+                {!isSidebarOpen && (
+                    <button
+                        onClick={handleAddToCart}
+                        className="absolute right-2 top-2 z-50 flex items-center justify-center rounded-full bg-white p-2 text-black shadow-md transition-colors duration-200 hover:bg-gray-100"
+                        aria-label="Add to bag"
+                        style={{ pointerEvents: 'auto' }}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2}
+                            stroke="currentColor"
+                            className="h-4 w-4"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                    </button>
+                )}
+            </div>
+
+            {/* Product Info */}
+            <div className="mt-2 flex items-start justify-between text-xs">
                 <div>
                     <h3 className="font-medium text-represent-text">
-                        <Link href={product.href}>
-                            {product.name}
-                        </Link>
+                        <Link href={product.href}>{product.name}</Link>
                     </h3>
-                    <p className="text-represent-muted mt-1">
+                    <p className="mt-1 text-represent-muted">
                         {product.color}
                         {product.variantCount && product.color ? ` · ` : ''}
                         {product.variantCount ? `${product.variantCount} Colours` : ''}
                     </p>
                 </div>
-                {/* Right side: Price */}
-                <p className="font-medium text-represent-text text-right">
-                    {displayPrice}
-                </p>
+                <p className="font-medium text-represent-text text-right">{displayPrice}</p>
             </div>
-
-            {/* Quick Add/Wishlist Icon (Top Right) - Updated onClick */}
-            <button
-                onClick={handleAddToCart}
-                className="absolute top-2 right-2 p-1 text-represent-muted opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/50 hover:bg-white rounded-full"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                <span className="sr-only">Add to bag</span>
-            </button>
         </div>
     );
 } 

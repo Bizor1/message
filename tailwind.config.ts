@@ -18,7 +18,8 @@ const config: Config = {
           dark: "#000000",
           gray: "#e5e5e5",
           muted: "#6b7280",
-        }
+        },
+        gold: '#D4AF37',
       },
       fontFamily: {
         inter: ["var(--font-inter)", "sans-serif"],
@@ -30,6 +31,11 @@ const config: Config = {
         lg: ["18px", "28px"],
         xl: ["20px", "30px"],
         "2xl": ["24px", "32px"],
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic':
+          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
     },
   },
